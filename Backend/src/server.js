@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import {app} from "./app.js"
-import {groqMain} from "./groq.js"
+import {groqMain} from "../utils/groqai.js"
 
 dotenv.config({
     path: "./.env"
@@ -16,6 +16,5 @@ app.post("/test", async(req, res) => {
     const data = response.choices[0].message?.content
     console.log(data);
     
-
     return res.json(data)
 })
