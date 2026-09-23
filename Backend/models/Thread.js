@@ -26,7 +26,7 @@ const ThreadSchema = new Schema({
         type: String,
         default: "New chat"
     },
-    message: [MessageSchema],
+    messages: [MessageSchema],
     createdAt:{
         type: Date,
         default: Date.now
