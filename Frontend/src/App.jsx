@@ -7,7 +7,7 @@ const App = () => {
   const providerValues = {}
 
   return (
-    <div className="bg-[#212121] flex">
+    <div className="bg-[#212121] flex h-screen">
       <MyContext.Provider value={providerValues}>
         <Sidebar></Sidebar>
         <ChatWindow></ChatWindow>
