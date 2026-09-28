@@ -20,7 +20,7 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 app.use(cookieParser())
 
-import chatRouter from "../routes/chat.route"
+import chatRouter from "../routes/chat.route.js"
 
 app.use("/api", chatRouter)
 

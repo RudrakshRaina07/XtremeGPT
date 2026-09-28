@@ -1,6 +1,6 @@
 import express from "express"
-import { Thread } from "../models/Thread";
-import {groqMain} from "../utils/groqai"
+import {Thread} from "../models/Thread.js";
+import {groqMain} from "../utils/groqai.js"
 
 const router = express.Router()
 
@@ -8,58 +8,59 @@ router.get("/thread", async (req, res) => {
     try {
         const threads = await Thread.find({}).sort({updatedAt: -1})
         
-        res.json(threads)
+        return res.json(threads)
     } catch (error) {
         console.error("Error fetching threads: ", error)
-        res.status(500).json({error: "Failed to fetch threads"})
+        return res.status(500).json({error: "Failed to fetch threads"})
     }
 })
 
 router.get("/thread/:threadId", async (req, res) => {
     const {threadId} = req.params
     try {
-        const thread = await Thread.findById(threadId)
+        const thread = await Thread.findById({threadId})
 
         if(!thread){
             res.status(404).json({error: "Thread not found"})
         }
 
-        res.json(thread.messages)
+        return res.json(thread.messages)
     } catch (error) {
         console.error("Error fetching chat: ", error)
-        res.status(500).json({error: "Failed to fetch chat"})
+        return res.status(500).json({error: "Failed to fetch chat"})
     }
 })
 
 router.delete("/thread/:threadId", async (req, res) => {
     const {threadId} = req.params
     try {
-        const deletedThread = await Thread.findOneAndDelete(threadId)
+        const deletedThread = await Thread.findOneAndDelete({threadId})
 
         if(!deletedThread){
             res.status(404).json({error: "Thread not found"})
         }
 
-        res.status(200).json({message: "Thread deleted successfully"})
+        return res.status(200).json({message: "Thread deleted successfully"})
 
     } catch (error) {
         console.error("Error deleting thread: ", error)
-        res.status(500).json({error: "Failed to delete thread"})
+        return res.status(500).json({error: "Failed to delete thread"})
     }
 })
 
-router.post("/chat", async (req, res) => {
-    const {threadId, message} = req.body
+router.post("/chat/:threadId", async (req, res) => {
+    const {message} = req.body
+    const {threadId} = req.params    
 
     if(!threadId || !message){
-        res.status(400).json({error: "Missing required details"})
+        return res.status(400).json({error: "Missing required details"})
     }
 
     try {
-        const thread = await Thread.findOne(threadId)
+        let thread = await Thread.findOne({threadId})
 
         if(!thread){
-            new Thread({
+            thread = new Thread({
                 threadId,
                 title: message,
                 messages: [{role: "user", content: message}]
@@ -74,11 +75,11 @@ router.post("/chat", async (req, res) => {
         thread.updatedAt = new Date()
 
         await thread.save()
-        res.status(200).json({reply: assistantReply})
+        return res.status(200).json({reply: assistantReply})
 
     } catch (error) {
         console.error("Error in chat: ", error)
-        res.status(500).json({error: "Error in chat"})
+        return res.status(500).json({error: "Error in chat"})
     }
 })
 
