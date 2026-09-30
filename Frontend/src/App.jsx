@@ -10,9 +10,10 @@ const App = () => {
   const [currentThreadId, setCurrentThreadId] = useState(uuidv1())
   const [prevChats, setPrevChats] = useState([])
   const [newChat, setNewChat] = useState(true)
+  const [allThreads, setAllThreads] = useState([])
 
   const providerValues = {
-    prompt, setPrompt, reply, setReply, currentThreadId, prevChats, setPrevChats, newChat, setNewChat, setCurrentThreadId
+    prompt, setPrompt, reply, setReply, currentThreadId, prevChats, setPrevChats, newChat, setNewChat, setCurrentThreadId, allThreads, setAllThreads
   }
 
   return (

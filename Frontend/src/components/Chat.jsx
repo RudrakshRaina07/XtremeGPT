@@ -1,303 +1,199 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { MyContext } from './MyContext';
-import ReactMarkdown from "react-markdown"
-import rehypeHighlight from "rehype-highlight"
+import React, { useContext, useEffect, useState } from "react";
+import { MyContext } from "./MyContext";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
+
+import "highlight.js/styles/github-dark.css";
 import rehypeRaw from "rehype-raw";
-import "highlight.js/styles/github-dark.css"
 
 const Chat = () => {
-  const {newChat, prevChats, reply} = useContext(MyContext)
-  const [latestReply, setLatestReply] = useState(null)
+  const { newChat, prevChats, reply, setPrevChats } = useContext(MyContext);
+
+  const [latestReply, setLatestReply] = useState(null);
 
   useEffect(() => {
-    if(!prevChats.length) return;
+    if (!reply) {
+      setLatestReply(null);
+      return;
+    }
 
-    const content = reply.split(" ")
+    const content = reply.split(" ");
+    let idx = 0;
 
-    let idx = 0
+    setLatestReply("");
+
     const interval = setInterval(() => {
-      setLatestReply(content.slice(0, idx+1).join(" "))
 
-      idx++
-      if(idx >= content.length) clearInterval(interval)
+          setLatestReply(content.slice(0, idx+1).join(" "));
+
+          idx++;
+      if (idx >= content.length) {
+        clearInterval(interval);
+
+        setPrevChats(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: reply
+          }
+        ])
+
+        setLatestReply("")
+      }
     }, 40);
-  
-    return () => clearInterval(interval)
-  }, [prevChats, reply])
+
+    return () => clearInterval(interval);
+  }, [ reply]);
+
+
+  const renderAssistantMessage = (content) => {
+    return (
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeHighlight, rehypeRaw]}
+        components={{
+          p: ({ children }) => (
+            <p className="mb-4 leading-7 wrap-break-word">
+              {children}
+            </p>
+          ),
+
+          h1: ({ children }) => (
+            <h1 className="text-2xl font-bold mt-5 mb-4">
+              {children}
+            </h1>
+          ),
+
+          h2: ({ children }) => (
+            <h2 className="text-xl font-bold mt-5 mb-3">
+              {children}
+            </h2>
+          ),
+
+          h3: ({ children }) => (
+            <h3 className="text-lg font-semibold mt-4 mb-2">
+              {children}
+            </h3>
+          ),
+
+          ul: ({ children }) => (
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              {children}
+            </ul>
+          ),
+
+          ol: ({ children }) => (
+            <ol className="list-decimal pl-6 mb-4 space-y-2">
+              {children}
+            </ol>
+          ),
+
+          li: ({ children }) => (
+            <li className="leading-7">
+              {children}
+            </li>
+          ),
+
+          pre: ({ children }) => (
+            <pre className="bg-[#0d1117] rounded-xl p-4 my-5 overflow-x-auto max-w-full border border-white/10">
+              {children}
+            </pre>
+          ),
+
+          code: ({ children }) => (
+            <code className="bg-white/10 rounded px-1 py-0.5 text-sm">
+              {children}
+            </code>
+          ),
+
+          table: ({ children }) => (
+            <div className="w-full overflow-x-auto my-5">
+              <table className="w-full border-collapse text-sm">
+                {children}
+              </table>
+            </div>
+          ),
+
+          th: ({ children }) => (
+            <th className="border border-white/10 px-4 py-2 text-left">
+              {children}
+            </th>
+          ),
+
+          td: ({ children }) => (
+            <td className="border border-white/10 px-4 py-2">
+              {children}
+            </td>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    );
+  };
+
+  const AssistantMessage = ({ content }) => {
+    return (
+      <div className="w-full flex justify-start">
+        <div className="w-[75%] ml-[12.5%] min-w-0">
+          {renderAssistantMessage(content)}
+        </div>
+      </div>
+    );
+  };
+
 
   return (
-    <div className="w-full min-w-0 overflow-hidden">
-      <div className="flex justify-center items-center mb-4">
-        {newChat && <h1 className="text-2xl text-shadow-3xl">Start a New Chat!</h1>}
-      </div>
-      <div className="flex justify-center flex-col items-center gap-10 w-full min-w-0">
-        {prevChats?.slice(0, -1).map((chat, idx) => {
-              if(chat.role === "user"){
-                return <div className="flex justify-end w-[65%]">
-                  <p className="bg-[rgba(255,255,255,0.05)] rounded-xl py-2 px-4 wrap-break-word max-w-full">{chat.content}</p>
+    <div className="w-full min-w-0">
+
+      {newChat && (
+        <div className="flex justify-center items-center mb-6">
+          <h1 className="text-2xl">
+            Start a New Chat!
+          </h1>
+        </div>
+      )}
+
+
+      <div className="w-full flex flex-col gap-8">
+
+        {prevChats?.map((chat, idx) => {
+
+          if (chat.role === "user") {
+            return (
+              <div
+                key={idx}
+                className="w-full flex justify-end"
+              >
+                <div className="max-w-[65%] bg-[rgba(255,255,255,0.05)] rounded-xl px-4 py-3 break-words whitespace-pre-wrap">
+                  {chat.content}
                 </div>
-              }
-              if(chat.role === "assistant"){
-                return <div className="flex justify-start w-[75%] min-w-0">
-                    <div className="w-full min-w-0 text-[15px]">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeHighlight, rehypeRaw]}
-                        components={{
-                          h1: ({ children }) => (
-                            <h1 className="text-2xl font-bold mt-6 mb-4">
-                              {children}
-                            </h1>
-                          ),
+              </div>
+            );
+          }
 
-                          h2: ({ children }) => (
-                            <h2 className="text-xl font-bold mt-5 mb-3">
-                              {children}
-                            </h2>
-                          ),
 
-                          h3: ({ children }) => (
-                            <h3 className="text-lg font-semibold mt-4 mb-2">
-                              {children}
-                            </h3>
-                          ),
+          if (chat.role === "assistant") {
+            return (
+              <AssistantMessage
+                key={idx}
+                content={chat.content}
+              />
+            );
+          }
 
-                          p: ({ children }) => (
-                            <p className="leading-7 mb-4 text-gray-200">
-                              {children}
-                            </p>
-                          ),
-
-                          strong: ({ children }) => (
-                            <strong className="font-bold text-white">
-                              {children}
-                            </strong>
-                          ),
-
-                          ul: ({ children }) => (
-                            <ul className="list-disc pl-6 mb-4 space-y-2">
-                              {children}
-                            </ul>
-                          ),
-
-                          ol: ({ children }) => (
-                            <ol className="list-decimal pl-6 mb-4 space-y-2">
-                              {children}
-                            </ol>
-                          ),
-
-                          li: ({ children }) => (
-                            <li className="leading-7 text-gray-200">
-                              {children}
-                            </li>
-                          ),
-
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-4 border-gray-500 pl-4 my-4 italic text-gray-400">
-                              {children}
-                            </blockquote>
-                          ),
-
-                          code: ({ children, className }) => {
-                            const isCodeBlock = className?.includes("language-");
-
-                            if (isCodeBlock) {
-                              return (
-                                <code className={className}>
-                                  {children}
-                                </code>
-                              );
-                            }
-
-                            return (
-                              <code className="bg-[#2f2f2f] text-gray-200 px-1.5 py-0.5 rounded-md text-sm">
-                                {children}
-                              </code>
-                            );
-                          },
-
-                          pre: ({ children }) => (
-                            <pre className="bg-[#0d1117] rounded-xl p-4 my-5 overflow-x-auto border border-white/10">
-                              {children}
-                            </pre>
-                          ),
-
-                          table: ({ children }) => (
-                            <div className="overflow-x-auto my-5">
-                              <table className="w-full border-collapse text-sm">
-                                {children}
-                              </table>
-                            </div>
-                          ),
-
-                          th: ({ children }) => (
-                            <th className="border border-white/10 bg-white/5 px-4 py-3 text-left font-semibold">
-                              {children}
-                            </th>
-                          ),
-
-                          td: ({ children }) => (
-                            <td className="border border-white/10 px-4 py-3">
-                              {children}
-                            </td>
-                          ),
-
-                          hr: () => (
-                            <hr className="border-white/10 my-6" />
-                          ),
-
-                          a: ({ href, children }) => (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 hover:underline"
-                            >
-                              {children}
-                            </a>
-                          ),
-                        }}
-                      >
-                        {chat.content}
-                      </ReactMarkdown>
-                    </div>
-                </div>
-              }
+          return null;
         })}
 
-        {
-          prevChats.length > 0 && latestReply !== null &&
-          <div>
-            <div className="flex justify-start w-[75%] min-w-0">
-                    <div className="w-full min-w-0 text-[15px]">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        rehypePlugins={[rehypeHighlight, rehypeRaw]}
-                        components={{
-                          h1: ({ children }) => (
-                            <h1 className="text-2xl font-bold mt-6 mb-4">
-                              {children}
-                            </h1>
-                          ),
 
-                          h2: ({ children }) => (
-                            <h2 className="text-xl font-bold mt-5 mb-3">
-                              {children}
-                            </h2>
-                          ),
+        {latestReply && (
+          <AssistantMessage content={latestReply} />
+        )}
 
-                          h3: ({ children }) => (
-                            <h3 className="text-lg font-semibold mt-4 mb-2">
-                              {children}
-                            </h3>
-                          ),
-
-                          p: ({ children }) => (
-                            <p className="leading-7 mb-4 text-gray-200">
-                              {children}
-                            </p>
-                          ),
-
-                          strong: ({ children }) => (
-                            <strong className="font-bold text-white">
-                              {children}
-                            </strong>
-                          ),
-
-                          ul: ({ children }) => (
-                            <ul className="list-disc pl-6 mb-4 space-y-2">
-                              {children}
-                            </ul>
-                          ),
-
-                          ol: ({ children }) => (
-                            <ol className="list-decimal pl-6 mb-4 space-y-2">
-                              {children}
-                            </ol>
-                          ),
-
-                          li: ({ children }) => (
-                            <li className="leading-7 text-gray-200">
-                              {children}
-                            </li>
-                          ),
-
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-4 border-gray-500 pl-4 my-4 italic text-gray-400">
-                              {children}
-                            </blockquote>
-                          ),
-
-                          code: ({ children, className }) => {
-                            const isCodeBlock = className?.includes("language-");
-
-                            if (isCodeBlock) {
-                              return (
-                                <code className={className}>
-                                  {children}
-                                </code>
-                              );
-                            }
-
-                            return (
-                              <code className="bg-[#2f2f2f] text-gray-200 px-1.5 py-0.5 rounded-md text-sm">
-                                {children}
-                              </code>
-                            );
-                          },
-
-                          pre: ({ children }) => (
-                            <pre className="bg-[#0d1117] rounded-xl p-4 my-5 overflow-x-auto border border-white/10">
-                              {children}
-                            </pre>
-                          ),
-
-                          table: ({ children }) => (
-                            <div className="overflow-x-auto my-5">
-                              <table className="w-full border-collapse text-sm">
-                                {children}
-                              </table>
-                            </div>
-                          ),
-
-                          th: ({ children }) => (
-                            <th className="border border-white/10 bg-white/5 px-4 py-3 text-left font-semibold">
-                              {children}
-                            </th>
-                          ),
-
-                          td: ({ children }) => (
-                            <td className="border border-white/10 px-4 py-3">
-                              {children}
-                            </td>
-                          ),
-
-                          hr: () => (
-                            <hr className="border-white/10 my-6" />
-                          ),
-
-                          a: ({ href, children }) => (
-                            <a
-                              href={href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 hover:underline"
-                            >
-                              {children}
-                            </a>
-                          ),
-                        }}
-                      >
-                        {latestReply}
-                      </ReactMarkdown>
-                    </div>
-            </div>
-          </div>
-        }
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Chat
+export default Chat;
