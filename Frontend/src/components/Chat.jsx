@@ -166,7 +166,7 @@ const Chat = () => {
                 key={idx}
                 className="w-full flex justify-end"
               >
-                <div className="max-w-[65%] bg-[rgba(255,255,255,0.05)] rounded-xl px-4 py-3 break-words whitespace-pre-wrap">
+                <div className="max-w-[65%] bg-[rgba(255,255,255,0.05)] rounded-xl px-4 py-3 wrap-break-word whitespace-pre-wrap">
                   {chat.content}
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import express from "express"
 import {Thread} from "../models/Thread.js";
 import {groqMain} from "../utils/groqai.js"
+import mongoose from "mongoose";
 
 const router = express.Router()
 
@@ -18,7 +19,7 @@ router.get("/thread", async (req, res) => {
 router.get("/thread/:threadId", async (req, res) => {
     const {threadId} = req.params
     try {
-        const thread = await Thread.findById({threadId})
+        const thread = await Thread.findOne({threadId})
 
         if(!thread){
             res.status(404).json({error: "Thread not found"})
