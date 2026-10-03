@@ -40,9 +40,25 @@ const Sidebar = () => {
         console.log(data);
         
         setPrevChats(data)
+        setNewChat(false)
       } catch (error) {
         console.error("Error fetching chat: ", error)
       }
+  }
+
+  const deleteThread = async (threadId) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/api/thread/${threadId}`)
+
+      setAllThreads(prev => prev.filter(thread => thread.threadId !== threadId))
+
+      if(threadId === currentThreadId){
+        createNewChat()
+      }
+
+    } catch (error) {
+      console.error("Error in deleting thread: ", error)
+    }
   }
 
   return (
@@ -57,8 +73,15 @@ const Sidebar = () => {
               allThreads.map((thread, idx) => {
                 return <li 
                   onClick={(e) => createNewThread(thread.threadId)}
-                  className=" bg-[#000000] cursor-pointer hover:bg-[rgba(180,180,180,0.05)] active:scale-95 rounded-xl px-4 py-2">
+                  className=" bg-[#000000] cursor-pointer hover:bg-[rgba(180,180,180,0.05)] active:scale-95  rounded-xl px-4 py-2 flex justify-between">
                     {thread.title}
+                      <i 
+                        className="ri-delete-bin-fill text-white hover:text-red-500! hover:text-xl transition-colors duration-200"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteThread(thread.threadId)
+                        }}
+                      ></i>
                 </li >
               })
             }
