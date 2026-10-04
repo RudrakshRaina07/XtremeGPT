@@ -7,6 +7,7 @@ import {ThreeDots} from "react-loader-spinner"
 const ChatWindow = () => {
   const {prompt, setPrompt, reply, setReply, currentThreadId, prevChats, setPrevChats} = useContext(MyContext)
   const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const getReply = async () => {
     if (!prompt.trim()) return;
@@ -61,14 +62,30 @@ const ChatWindow = () => {
     }
 
     setPrompt("")
-  }, [reply])
+  }, [reply]) 
+
+  const handleProfileVisibility = () => {
+    setIsOpen(!isOpen)
+  }
 
   return (
     <div className="h-screen w-[70%] flex flex-col min-w-0 overflow-hidden">
       <div className="flex justify-between p-8 items-center">
         <h3 className="font-semibold text-lg">XtremeGPT<span className="text-2xl ml-1"><i className="ri-arrow-down-s-line"></i></span></h3>
-        <span className="bg-blue-500 rounded-full h-10 w-10 items-center flex justify-center cursor-pointer"><i className="ri-user-fill"></i></span>
+        <span 
+          className="bg-blue-500 rounded-full h-10 w-10 items-center flex justify-center cursor-pointer active:scale-95"
+          onClick={handleProfileVisibility}
+          ><i className="ri-user-fill"></i>
+        </span>
       </div>
+      {
+        isOpen && 
+          <div className="absolute right-55 top-25 bg-[#000000] px-4  py-2 rounded-2xl">
+            <div className="hover:bg-[rgba(180,180,180,0.5)] rounded-xl px-3 py-1 items-center ">
+              <button className="cursor-pointer active:scale-95">Logout</button>
+            </div>
+          </div>
+      }
       <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden hide-scrollbar">
         <Chat ></Chat>
       </div>
