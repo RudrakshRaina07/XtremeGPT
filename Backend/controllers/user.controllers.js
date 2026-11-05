@@ -227,5 +227,6 @@ export{
     loginUser,
     logoutUser,
     changeCurrentPassword,
-    updateAccountDetails
+    updateAccountDetails,
+    refreshAccessToken
 }
