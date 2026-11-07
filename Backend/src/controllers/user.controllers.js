@@ -58,7 +58,7 @@ const registerUser = asyncHandller(async(req, res) => {
 const loginUser = asyncHandller(async(req, res) => {
     const {username, email, password} = req.body
 
-    if(!username || !email){
+    if(!username && !email){
         return new ApiError(400, "Username or email is required")
     }
 
@@ -84,7 +84,8 @@ const loginUser = asyncHandller(async(req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false,
+        sameSite: "lax"
     }
 
     return res
@@ -103,7 +104,7 @@ const loginUser = asyncHandller(async(req, res) => {
 })
 
 const logoutUser = asyncHandller(async(req, res) => {
-    User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
         req.user._id,
         {
             $set: {
@@ -151,7 +152,7 @@ const refreshAccessToken = asyncHandller(async (req, res) => {
             throw new ApiError(401, "Refresh token is expired or user")
         }
 
-        const {accessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id)
+        const {accessToken,refreshToken: newRefreshToken} = await generateAccessAndRefreshToken(user._id)
 
         const options = {
             httpOnly: true,

@@ -1,28 +1,19 @@
-import React, { useState } from 'react'
-import {MyContext} from "./components/MyContext"
-import Sidebar from "./components/Sidebar"
-import ChatWindow from "./components/ChatWindow"
-import {v1 as uuidv1} from "uuid"
+import React from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import Login from './components/pages/Login';
+import Signup from './components/pages/Signup';
+import Home from "./components/pages/Home"
 
 const App = () => {
-  const [prompt, setPrompt] = useState("")
-  const [reply, setReply] = useState("")
-  const [currentThreadId, setCurrentThreadId] = useState(uuidv1())
-  const [prevChats, setPrevChats] = useState([])
-  const [newChat, setNewChat] = useState(true)
-  const [allThreads, setAllThreads] = useState([])
-
-  const providerValues = {
-    prompt, setPrompt, reply, setReply, currentThreadId, prevChats, setPrevChats, newChat, setNewChat, setCurrentThreadId, allThreads, setAllThreads
-  }
-
   return (
-    <div className="bg-[#212121] flex h-screen">
-      <MyContext.Provider value={providerValues}>
-        <Sidebar></Sidebar>
-        <ChatWindow></ChatWindow>
-      </MyContext.Provider>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Signup />} />
+        <Route path="/" element={<Home />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
