@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import {app} from "./app.js"
-import {groqMain} from "../utils/groqai.js"
+import {groqMain} from "../src/utils/groqai.js"
 import connectDB from "./db/index.js"
 
 dotenv.config({

@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
 import Home from "./components/pages/Home"
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
   return (
@@ -10,8 +11,10 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Signup />} />
-        <Route path="/" element={<Home />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Home />} />
+        </Route >
+        <Route path="*" element={<Navigate to="/" replace/>} />
       </Routes>
     </BrowserRouter>
   )

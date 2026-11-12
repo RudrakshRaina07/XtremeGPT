@@ -1,4 +1,4 @@
-import {asyncHandller} from "../utils/asyncHandler.js"
+import {asyncHandler} from "../utils/asyncHandler.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
@@ -20,7 +20,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
-const registerUser = asyncHandller(async(req, res) => {
+const registerUser = asyncHandler(async(req, res) => {
     const {fullName, username, email, password} = req.body
     
     if([fullName, username, email, password].some((field) => field?.trim() === "")){
@@ -55,7 +55,7 @@ const registerUser = asyncHandller(async(req, res) => {
     )
 })
 
-const loginUser = asyncHandller(async(req, res) => {
+const loginUser = asyncHandler(async(req, res) => {
     const {username, email, password} = req.body
 
     if(!username && !email){
@@ -70,7 +70,7 @@ const loginUser = asyncHandller(async(req, res) => {
         throw new ApiError(400, "User does not exist")
     }
 
-    const isPasswordValid = await user.isPasswordCorret(password)
+    const isPasswordValid = await user.isPasswordCorrect(password)
 
     if(!isPasswordValid){
         throw new ApiError(401, "Invalid user credentials")
@@ -103,7 +103,7 @@ const loginUser = asyncHandller(async(req, res) => {
     )
 })
 
-const logoutUser = asyncHandller(async(req, res) => {
+const logoutUser = asyncHandler(async(req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
@@ -129,7 +129,7 @@ const logoutUser = asyncHandller(async(req, res) => {
     )
 })
 
-const refreshAccessToken = asyncHandller(async (req, res) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
     if(!incomingRefreshToken){
@@ -156,7 +156,8 @@ const refreshAccessToken = asyncHandller(async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true
+            secure: false,
+            sameSite: "lax"
         }
 
         return res
@@ -171,7 +172,7 @@ const refreshAccessToken = asyncHandller(async (req, res) => {
     }
 })
 
-const changeCurrentPassword = asyncHandller(async (req, res) => {
+const changeCurrentPassword = asyncHandler(async (req, res) => {
     const {oldPassword, newPassword, confPassword} = req.body
 
     if(!(newPassword === confPassword)){
@@ -198,7 +199,7 @@ const changeCurrentPassword = asyncHandller(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed successfully"))
 })
 
-const updateAccountDetails = asyncHandller(async (req, res) => {
+const updateAccountDetails = asyncHandler(async (req, res) => {
     const {fullName, email } = req.body
 
     if(!fullName || !email){
@@ -223,11 +224,26 @@ const updateAccountDetails = asyncHandller(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details changed successfully"))
 })
 
+const getCurrentUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user?._id).select(
+        "-password -refreshToken"
+    );
+
+    if(!user){
+        throw new ApiError(404, "User not found")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User fetched sccessfully"))
+})
+
 export{
     registerUser,
     loginUser,
     logoutUser,
     changeCurrentPassword,
     updateAccountDetails,
-    refreshAccessToken
+    refreshAccessToken,
+    getCurrentUser
 }

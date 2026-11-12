@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import axios from "axios";
 
@@ -6,7 +6,24 @@ export const AuthContext = createContext()
 
 export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+
+    const checkAuth = async () => {
+        try {
+            const response = await axiosInstance.get("/user/current-user")
+
+            setUser(response.data.data)
+        } catch (error) {
+            console.log("Auth error:", error.response?.data || error.message);
+            setUser(null)
+        } finally{
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        checkAuth()
+    }, [])
 
     const register = async(formData) => {
         try {
@@ -49,6 +66,6 @@ export const AuthProvider = ({children}) => {
     };
 
     return (
-        <AuthContext.Provider value={{user, setUser, loading, register, login, logout}}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{user, setUser, loading, register, login, logout, checkAuth}}>{children}</AuthContext.Provider>
     )
 }
